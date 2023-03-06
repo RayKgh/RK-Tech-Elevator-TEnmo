@@ -91,5 +91,5 @@ spring.datasource.password=postgres1
 
 `com.techelevator.dao.JdbUserDaoTests` has been provided for you as an example for writing your own DAO integration tests.
 
-Remember that when testing, you're using a copy of the real database. The schema and data for the test database are defined in `/src/test/resources/test-data.sql`. The schema in this file *must* matche the schema defined in `database/tenmo.sql`.
+Remember that when testing, you're using a copy of the real database. The schema and data for the test database are defined in `/src/test/resources/test-data.sql`. The schema in this file *must* match the schema defined in `database/tenmo.sql`.
 
