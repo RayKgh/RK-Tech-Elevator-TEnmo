@@ -2,18 +2,16 @@ package com.techelevator.tenmo.controller;
 
 import com.techelevator.tenmo.dao.AccountDao;
 import com.techelevator.tenmo.dao.UserDao;
-import com.techelevator.tenmo.model.Account;
-import com.techelevator.tenmo.model.AccountDto;
-import com.techelevator.tenmo.model.User;
+import com.techelevator.tenmo.model.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.validation.Valid;
+import java.math.BigDecimal;
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @PreAuthorize("isAuthenticated()")
@@ -41,4 +39,33 @@ public class TenmoController {
 
         return accountDto;
     }
+
+    @RequestMapping (path = "/users", method = RequestMethod.GET)
+    public List<User> listUsers() {return userDao.findAll();}
+
+    @ResponseStatus (HttpStatus.CREATED)
+    @RequestMapping (path = "/transfer", method = RequestMethod.POST)
+    public void transfer(@Valid @RequestBody TransactionDto newTransaction, Principal currentUser) {
+
+        final User user = userDao.findByUsername(currentUser.getName());
+        final Account account = accountDao.getAccountByUserId(user.getId());
+
+        if(currentUser.getName() == newTransaction.getRecipientName()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can't send money to yourself, ya dingus!");
+        }
+        if(account.getBalance().compareTo(BigDecimal.ZERO) != 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Your account is empty");
+        }
+        if(account.getBalance().compareTo(newTransaction.getTransferAmt()) == -1) {;
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You don't have enough funds to send this amount, peasant");
+        }
+        if(newTransaction.getTransferAmt().compareTo(BigDecimal.ZERO)!= 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Transfers must be greater than zero!");
+        }
+    }
+
+
+
+
+
 }
