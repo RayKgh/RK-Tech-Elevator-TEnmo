@@ -31,9 +31,9 @@ CREATE TABLE transaction (
 	sender_id int NOT NULL,
 	recipient_id int NOT NULL,
 	transfer_amt decimal NOT NULL,
-	timestamp timestamp NOT NULL,
-	is_requested boolean NOT NULL,
-	status int NOT NULL,
+	timestamp timestamp NOT NULL DEFAULT current_timestamp,
+	is_requested boolean NOT NULL DEFAULT FALSE,
+	status int NOT NULL DEFAULT 0,
 	CONSTRAINT FK_account_sender FOREIGN KEY(sender_id) REFERENCES account(user_id),
 	CONSTRAINT FK_account_recipient FOREIGN KEY(recipient_id) REFERENCES account(user_id)
 );

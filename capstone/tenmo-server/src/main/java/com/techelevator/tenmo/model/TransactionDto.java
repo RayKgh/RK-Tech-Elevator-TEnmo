@@ -1,12 +1,13 @@
 package com.techelevator.tenmo.model;
 
+import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
 
 public class TransactionDto {
     @NotEmpty
     private String recipientName;
-    @NotEmpty
+    @DecimalMin(value = "0.01", message = "Transfer amount must be greater than zero")
     private BigDecimal transferAmt;
 
     public TransactionDto(String recipientName, BigDecimal transferAmt) {

@@ -1,6 +1,7 @@
 package com.techelevator.tenmo.controller;
 
 import com.techelevator.tenmo.dao.AccountDao;
+import com.techelevator.tenmo.dao.TransactionDao;
 import com.techelevator.tenmo.dao.UserDao;
 import com.techelevator.tenmo.model.*;
 import org.springframework.http.HttpStatus;
@@ -18,10 +19,12 @@ import java.util.List;
 public class TenmoController {
     private UserDao userDao;
     private AccountDao accountDao;
+    private TransactionDao transactionDao;
 
-    public TenmoController(UserDao userDao, AccountDao accountDao) {
+    public TenmoController(UserDao userDao, AccountDao accountDao, TransactionDao transactionDao) {
         this.userDao = userDao;
         this.accountDao = accountDao;
+        this.transactionDao = transactionDao;
     }
 
     @GetMapping(path = "/account")
@@ -50,18 +53,18 @@ public class TenmoController {
         final User user = userDao.findByUsername(currentUser.getName());
         final Account account = accountDao.getAccountByUserId(user.getId());
 
-        if(currentUser.getName() == newTransaction.getRecipientName()) {
+        if(currentUser.getName().equalsIgnoreCase(newTransaction.getRecipientName())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can't send money to yourself, ya dingus!");
         }
-        if(account.getBalance().compareTo(BigDecimal.ZERO) != 1) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Your account is empty");
-        }
         if(account.getBalance().compareTo(newTransaction.getTransferAmt()) == -1) {;
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You don't have enough funds to send this amount, peasant");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You are too poor to send this amount, peasant!");
         }
         if(newTransaction.getTransferAmt().compareTo(BigDecimal.ZERO)!= 1) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Transfers must be greater than zero!");
         }
+
+        transactionDao.create(user.getId(), userDao.findIdByUsername(newTransaction.getRecipientName()), newTransaction.getTransferAmt());
+
     }
 
 
