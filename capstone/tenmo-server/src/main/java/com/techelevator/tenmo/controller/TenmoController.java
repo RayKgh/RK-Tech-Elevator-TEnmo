@@ -50,20 +50,25 @@ public class TenmoController {
     @RequestMapping (path = "/transfer", method = RequestMethod.POST)
     public void transfer(@Valid @RequestBody TransactionDto newTransaction, Principal currentUser) {
 
-        final User user = userDao.findByUsername(currentUser.getName());
-        final Account account = accountDao.getAccountByUserId(user.getId());
+        final User sender = userDao.findByUsername(currentUser.getName());
+        final Account senderAccount = accountDao.getAccountByUserId(sender.getId());
+        final User recipient = userDao.findByUsername(newTransaction.getRecipientName());
+        final Account recipientAccount = accountDao.getAccountByUserId(recipient.getId());
+        final BigDecimal transferAmt = newTransaction.getTransferAmt();
 
-        if(currentUser.getName().equalsIgnoreCase(newTransaction.getRecipientName())) {
+        if(currentUser.getName().equalsIgnoreCase(recipient.getUsername())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can't send money to yourself, ya dingus!");
         }
-        if(account.getBalance().compareTo(newTransaction.getTransferAmt()) == -1) {;
+        if(senderAccount.getBalance().compareTo(transferAmt) == -1) {;
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You are too poor to send this amount, peasant!");
         }
-        if(newTransaction.getTransferAmt().compareTo(BigDecimal.ZERO)!= 1) {
+        if(transferAmt.compareTo(BigDecimal.ZERO) != 1) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Transfers must be greater than zero!");
         }
 
-        transactionDao.create(user.getId(), userDao.findIdByUsername(newTransaction.getRecipientName()), newTransaction.getTransferAmt());
+        transactionDao.create(sender.getId(), recipient.getId(), transferAmt);
+        accountDao.withdraw(sender.getId(), transferAmt, senderAccount.getBalance());
+        accountDao.deposit(recipient.getId(), transferAmt, recipientAccount.getBalance());
 
     }
 
