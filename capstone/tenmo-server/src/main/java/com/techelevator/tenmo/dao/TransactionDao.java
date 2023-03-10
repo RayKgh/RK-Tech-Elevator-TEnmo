@@ -9,6 +9,9 @@ import java.util.List;
 public interface TransactionDao {
 
     boolean create(int senderId, int recipientId, BigDecimal transferAmt);
+    Transaction getTransactionsByTransactionId(int id);
+
+    List<Transaction> getTransactionsByUserId(int id);
     //   List<User> findAll();
   //  User getUserById(int id);
   //  User findByUsername(String username);

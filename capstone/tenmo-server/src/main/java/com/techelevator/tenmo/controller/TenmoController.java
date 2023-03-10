@@ -56,10 +56,11 @@ public class TenmoController {
         final Account recipientAccount = accountDao.getAccountByUserId(recipient.getId());
         final BigDecimal transferAmt = newTransaction.getTransferAmt();
 
+
         if(currentUser.getName().equalsIgnoreCase(recipient.getUsername())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can't send money to yourself, ya dingus!");
         }
-        if(senderAccount.getBalance().compareTo(transferAmt) == -1) {;
+        if(senderAccount.getBalance().compareTo(transferAmt) == -1) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You are too poor to send this amount, peasant!");
         }
         if(transferAmt.compareTo(BigDecimal.ZERO) != 1) {
@@ -72,6 +73,16 @@ public class TenmoController {
 
     }
 
+    @GetMapping(path = "/transactions")
+    public List<Transaction> userTransactions(Principal currentUser) {
+        final User user = userDao.findByUsername(currentUser.getName());
+        return transactionDao.getTransactionsByUserId(user.getId());
+    }
+
+    @GetMapping(path = "/transactions/{id}")
+    public Transaction getTransactionDetailsOrInfoOrById(@PathVariable int id){
+        return transactionDao.getTransactionsByTransactionId(id);
+    }
 
 
 
